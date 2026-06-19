@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Level Up! - Mroczny Las (Mega-Hardcore 50+ Worlds Edition)</title>
+    <style>
+        :root {
+            --bg-color: #05050b; --text-color: #ffffff; --accent-color: #00ffcc;
+            --btn-bg: #101026; --btn-hover: #00ffcc; --panel-bg: rgba(8, 8, 20, 0.95);
+            --panel-border: #1f2d5a; --input-bg: #020206; --hover-text: #000000;
+        }
+        .theme-light {
+            --bg-color: #f0f2f5; --text-color: #1a1a1a; --accent-color: #0066cc;
+            --btn-bg: #e4e6eb; --btn-hover: #0066cc; --panel-bg: rgba(255, 255, 255, 0.95);
+            --panel-border: #b0b3b8; --input-bg: #ffffff; --hover-text: #ffffff;
+        }
+        .theme-green {
+            --bg-color: #030f03; --text-color: #e0f2e0; --accent-color: #39ff14;
+            --btn-bg: #0a240a; --btn-hover: #39ff14; --panel-bg: rgba(6, 24, 6, 0.95);
+            --panel-border: #144014; --input-bg: #010501; --hover-text: #000000;
+        }
+        .theme-red {
+            --bg-color: #0f0303; --text-color: #f2e0e0; --accent-color: #ff073a;
+            --btn-bg: #240a0c; --btn-hover: #ff073a; --panel-bg: rgba(24, 6, 8, 0.95);
+            --panel-border: #441418; --input-bg: #050102; --hover-text: #ffffff;
+        }
+        .theme-blue {
+            --bg-color: #03080f; --text-color: #e0e8f2; --accent-color: #00d2ff;
+            --btn-bg: #0a1624; --btn-hover: #00d2ff; --panel-bg: rgba(6, 14, 24, 0.95);
+            --panel-border: #142f44; --input-bg: #010205; --hover-text: #000000;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { 
+            background-color: #020205; color: var(--text-color); margin: 0; padding: 0; 
+            user-select: none; touch-action: none; overflow: hidden; display: flex;
+            justify-content: center; align-items: center; height: 100vh; width: 100vw;
+        }
+
+        .game-wrapper {
+            position: relative; width: 600px; height: 600px; z-index: 2;
+            max-width: 100vw; max-height: 100vh; border: 4px solid var(--panel-border);
+            background: #000; box-shadow: 0 0 40px rgba(0,255,204,0.15); overflow: hidden;
+        }
+
+        .splash-screen {
+            position: absolute; top:0; left:0; width:100%; height:100%; background:#020206;
+            display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:110;
+            transition: opacity 0.5s ease; text-align:center; padding:20px; pointer-events: auto;
+        }
+        .splash-screen.hidden { opacity:0; pointer-events:none; z-index: 0; }
+        .splash-logo { font-size:44px; font-weight:900; color:var(--accent-color); text-shadow:0 0 20px rgba(0,255,204,0.5); margin-bottom:10px; }
+        .splash-author { font-size:16px; color:#aaa; font-style:italic; margin-bottom:40px; line-height: 1.4; }
+
+        .menu-overlay { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(4, 4, 12, 0.15); display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; z-index: 90; padding: 25px;
+            transition: all 0.25s ease-in-out; pointer-events: auto;
+        }
+        .menu-overlay.solid-bg { background: var(--panel-bg); }
+        .menu-overlay.hidden { opacity: 0; transform: scale(0.95); pointer-events: none; z-index: 0; }
+
+        .inner-panel {
+            width: 100%; max-width: 440px; background: rgba(8, 8, 24, 0.9);
+            border: 2px solid var(--panel-border); border-radius: 12px; padding: 20px;
+            text-align: center; box-shadow: 0 0 25px rgba(0,0,0,0.7); pointer-events: auto;
+        }
+
+        .menu-title { 
+            font-size: 36px; font-weight: 900; color: var(--accent-color); 
+            text-shadow: 0 0 15px rgba(0,255,204,0.3); margin-bottom: 15px; letter-spacing: 1px;
+        }
+
+        .menu-btn { 
+            background: var(--btn-bg); color: var(--text-color); border: 2px solid var(--panel-border); 
+            padding: 11px 20px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; 
+            margin: 6px 0; width: 100%; transition: all 0.2s ease; pointer-events: auto;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .menu-btn:hover { background: var(--btn-hover); color: var(--hover-text); border-color: #fff; transform: translateY(-1px); }
+
+        .nickname-box { display: flex; gap: 8px; margin: 10px 0; width: 100%; }
+        input[type="text"], select {
+            flex: 1; padding: 10px; font-size: 14px; border: 2px solid var(--panel-border); 
+            border-radius: 8px; background: var(--input-bg); color: var(--text-color); text-align: center; font-weight: bold;
+        }
+        .dice-btn { background: #7d2ae8; border: 2px solid #a29bfe; border-radius: 8px; color: white; padding: 0 14px; cursor: pointer; font-size: 18px; }
+
+        .topka-tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin-bottom: 8px; width: 100%; }
+        .tab-btn { padding: 8px 1px; background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); color: #fff; font-size: 10px; font-weight: bold; cursor: pointer; border-radius: 4px; text-align: center; pointer-events: auto; }
+        .tab-btn.active { background: var(--accent-color); color: #000; border-color: #fff; }
+
+        .leaderboard-container {
+            width: 100%; max-height: 180px; overflow-y: auto; border: 2px solid var(--panel-border); 
+            border-radius: 8px; background: rgba(0,0,0,0.6); margin-bottom: 10px;
+        }
+        .leaderboard-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+        .leaderboard-table th, .leaderboard-table td { padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .leaderboard-table th { color: var(--accent-color); position: sticky; top: 0; background: #0c0c1c; }
+
+        #gameCanvas { width: 100%; height: 100%; display: block; z-index: 5; position: relative; }
+
+        .ingame-hud { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: none; z-index: 10; }
+        .hud-side-menu { position: absolute; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 7px; pointer-events: auto; }
+        .hud-circle-btn {
+            background: rgba(4, 4, 15, 0.85); border: 2px solid var(--panel-border);
+            color: #fff; border-radius: 8px; width: 42px; height: 42px;
+            font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4); transition: transform 0.1s; pointer-events: auto;
+        }
+        .hud-circle-btn:active { transform: scale(0.9); }
+
+        .currency-container { position: absolute; top: 12px; right: 12px; display: flex; flex-direction: column; gap: 4px; pointer-events: auto; }
+        .currency-box {
+            background: rgba(4, 4, 15, 0.85); border: 1px solid var(--panel-border);
+            padding: 4px 10px; border-radius: 6px; display: flex; align-items: center; gap: 6px;
+            font-weight: bold; font-family: monospace; font-size: 13px; min-width: 120px; justify-content: flex-end;
+        }
+
+        .action-click-btn {
+            position: absolute; bottom: 15px; right: 15px; width: 88px; height: 88px;
+            background: linear-gradient(135deg, #ff3366, #ff0055); border: 2px solid #fff;
+            border-radius: 50%; color: #fff; font-weight: 900; font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; pointer-events: auto;
+            box-shadow: 0 0 15px rgba(255,51,102,0.4); text-align: center; line-height: 1.2;
+        }
+        .autoclick-status-node {
+            position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+            background: rgba(0, 255, 204, 0.15); border: 1px solid var(--accent-color);
+            padding: 5px 15px; border-radius: 20px; font-size: 11px; font-weight: bold;
+            color: var(--accent-color); font-family: monospace; display: none;
+        }
+
+        .app-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(4, 4, 12, 0.97); backdrop-filter: blur(4px);
+            z-index: 95; padding: 15px; display: none; flex-direction: column; pointer-events: auto;
+        }
+        .app-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--panel-border); padding-bottom: 8px; margin-bottom: 10px; }
+        
+        .window-layout { display: flex; gap: 12px; flex: 1; min-height: 0; }
+        .list-side { flex: 1.2; border: 2px solid var(--panel-border); border-radius: 10px; background: rgba(0,0,0,0.4); padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; pointer-events: auto; }
+        .view-side { flex: 1; border: 2px solid var(--panel-border); border-radius: 10px; background: rgba(0,0,0,0.5); padding: 10px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow-y: auto; pointer-events: auto; }
+        
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; cursor: pointer; font-size: 12px; pointer-events: auto; }
+        .item-row:hover, .item-row.selected { border-color: var(--accent-color); background: rgba(0,255,204,0.08); }
+
+        .hatch-popup-overlay {
+            position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(2,2,6,0.95);
+            z-index: 105; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; pointer-events: auto;
+        }
+        .hatch-card {
+            padding: 30px; border-radius: 15px; border: 3px solid var(--accent-color); background: #09091c;
+            box-shadow: 0 0 30px rgba(0,255,204,0.3); transform: scale(0.8); animation: popIn 0.3s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { to { transform: scale(1); } }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; font-size: 12px; font-family: monospace; }
+        .stats-card-node { background: rgba(255,255,255,0.03); padding: 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
+
+        .loading-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #020205; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .loading-screen.active { opacity: 1; pointer-events: auto; }
+        .loader-bar-bg { width: 65%; max-width: 300px; height: 10px; background: #0f0f26; border-radius: 5px; border: 1px solid var(--panel-border); overflow: hidden; }
+        .loader-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent-color), #00aaff); }
+
+        .dev-chat-box { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(3,3,10,0.98); border-top: 2px solid #ff0055; padding: 8px; display: none; z-index: 200; }
+        .dev-chat-box input { width: 100%; padding: 8px; background: #000; border: 1px solid #333; color: #ff0055; font-family: monospace; }
+        
+        .tutorial-content { text-align: left; font-size: 13px; line-height: 1.6; max-height: 280px; overflow-y: auto; padding-right: 5px; margin-bottom: 15px; }
+        .tutorial-section { background: rgba(255,255,255,0.03); border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="game-wrapper" id="gameWrapper">
+
+        <div class="splash-screen" id="splashScreen">
+            <div class="splash-logo">LEVEL UP!</div>
+            <div class="splash-author">Witamy! Autor: kyranisek<br>Życzymy miłej zabawy w Mrocznym Lesie!</div>
+            <button class="menu-btn" style="max-width:200px; background:var(--accent-color); color:#000;" onclick="triggerPreLobbyLoading()">URUCHOM</button>
+        </div>
+
+        <div class="loading-screen" id="loadingScreen">
+            <div style="font-size: 16px; font-weight: bold; color: var(--accent-color); margin-bottom: 15px; letter-spacing: 2px;" id="loadText">WCHODZENIE DO ŚWIATA...</div>
+            <div class="loader-bar-bg"><div class="loader-bar-fill" id="loadingBarFill"></div></div>
+        </div>
+
+        <div class="menu-overlay solid-bg hidden" id="firstRunScreen">
+            <div class="inner-panel">
+                <div class="menu-title">Witaj Dowódco! 🛡️</div>
+                <p style="font-size: 13px; opacity: 0.8;">Wybierz swój unikalny pseudonim leśny (od 4 do 12 liter):</p>
+                <div class="nickname-box">
+                    <input type="text" id="usernameInput" placeholder="Twój nick..." maxlength="14">
+                    <button class="dice-btn" onclick="generateRandomNick('usernameInput')">🎲</button>
+                </div>
+                <button class="menu-btn" style="background: var(--accent-color); color: #000;" onclick="submitFirstRun()">Zatwierdź</button>
+            </div>
+        </div>
+
+        <div class="menu-overlay hidden" id="mainMenuScreen">
+            <div class="menu-title">LEVEL UP!</div>
+            <div style="font-size: 13px; opacity:0.9; margin-bottom:15px; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--panel-border);">Dowódca: <span id="displayPlayerName" style="color: var(--accent-color); font-weight:bold;">-</span></div>
+            <div style="width: 100%; max-width: 280px; background: rgba(5,5,15,0.6); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <button class="menu-btn" onclick="triggerInGameLoading()">⚔️ GRAJ</button>
+                <button class="menu-btn" onclick="openSubMenu('tutorialOverlay')">📖 JAK GRAĆ</button>
+                <button class="menu-btn" onclick="openSubMenu('statsOverlay')">📊 STATYSTYKI</button>
+                <button class="menu-btn" onclick="openSubMenu('settingsScreen')">⚙️ USTAWIENIA</button>
+                <button class="menu-btn" onclick="openSubMenu('leaderboardScreen')">🏆 RANKINGI</button>
+                <button class="menu-btn" style="border-color:#ff4444;" onclick="exitGame()">🚪 WYJDŹ</button>
+            </div>
+        </div>
+
+        <div class="menu-overlay solid-bg hidden" id="tutorialOverlay">
+            <div class="inner-panel" style="max-width:500px;">
+                <div class="menu-title">📖 JAK GRAĆ</div>
+                <div class="tutorial-content">
+                    <div class="tutorial-section">
+                        <strong style="color:var(--accent-color);">🌟 Cel Rozgrywki:</strong> Klikaj energicznie przyciskiem myszy lub dotykaj ekranu, by gromadzić surowce w Mrocznym Lesie i budować swoją potęgę!
+                    </div>
+                    <div class="tutorial-section">
+                        <strong style="color:#ff7675;">🪐 System Ekstremalnych Światów (50+ Krain):</strong> Gra posiada ponad 55 potężnych krain! Każdy kolejny świat wymaga odpowiedniej liczby Rebirthów, lecz oferuje olbrzymie, kosmiczne mnożniki surowców.
+                    </div>
+                    <div class="tutorial-section">
+                        <strong style="color:#ffeaa7;">🥚 10 Nowych Jaj w Każdym Świecie:</strong> W każdym nowym świecie odblokowujesz zestaw 10 dedykowanych jaj! Na drugim świecie ceny zaczynają się od gigantycznych **500,000,000 monet** i szybują drastycznie w górę! Im dalszy świat, tym potężniejsze Stroje (👕) i Amulety (📿) czekają na zakup!
+                    </div>
+                    <div class="tutorial-section">
+                        <strong style="color:#d63031;">🔄 System Rebirthów (Odrodzeń):</strong> Gdy osiągniesz wymagany próg monetowy, możesz wykonać **Rebirth**. Zresetuje to Twoje monety, gemy i bilety, lecz otrzymasz **stały bonus x1.2 do mnożnika wszystkich walut** na zawsze! Ponadto Rebirthy odblokowują nowe potężne Światy!
+                    </div>
+                    <div class="tutorial-section">
+                        <strong style="color:#55efc4;">💵 Waluty w grze:</strong>
+                        <br>• 💵 <b>Monety:</b> Podstawa handlu. Kupisz za nie Jaja oraz stałe ulepszenia klikania.
+                        <br>• 💎 <b>Gemy:</b> Rzadki kryształ. Wypada losowo z kliknięć. Kupisz za nie unikalne Stroje i Specjalne Karty.
+                        <br>• 🎟️ <b>Bilety:</b> Elitarna waluta. Wypada najrzadziej. Służy do kupowania legendarnych Amuletów.
+                    </div>
+                </div>
+                <button class="menu-btn" style="background:#555;" onclick="closeSubMenu('tutorialOverlay')">↩ POWRÓT</button>
+            </div>
+        </div>
+
+        <div class="menu-overlay solid-bg hidden" id="settingsScreen">
+            <div class="inner-panel">
+                <div class="menu-title">⚙️ USTAWIENIA</div>
+                <div style="display:flex; flex-direction:column; gap:12px; text-align:left; font-size:13px; margin-bottom:15px;">
+                    <div>
+                        <label style="font-weight:bold; display:block; margin-bottom:4px;">Styl wizualny:</label>
+                        <select id="themeSelect" onchange="applyThemeClass(this.value)">
+                            <option value="dark">Ciemny (Mrok)</option>
+                            <option value="light">Jasny</option>
+                            <option value="green">Zielony Las</option>
+                            <option value="red">Krwawy Księżyc</option>
+                            <option value="blue">Lodowa Noc</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-weight:bold; display:block; margin-bottom:4px;">Dźwięki i Muzyka:</label>
+                        <select id="audioSelect" onchange="toggleAudioSetting(this.value)">
+                            <option value="on">Włączone</option>
+                            <option value="off">Wyłączone</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-weight:bold; display:block; margin-bottom:4px;">Zmień Pseudonim:</label>
+                        <div class="nickname-box" style="margin:0;">
+                            <input type="text" id="changeNickInput" placeholder="Nowy nick...">
+                            <button class="menu-btn" style="margin:0; max-width:90px; font-size:12px;" onclick="changeNicknameHardware()">Zmień</button>
+                        </div>
+                    </div>
+                </div>
+                <button class="menu-btn" style="background: #27ae60; color:#fff;" onclick="closeSubMenu('settingsScreen')">💾 ZAPISZ ORAZ WRÓĆ</button>
+            </div>
+        </div>
+
+        <div class="menu-overlay solid-bg hidden" id="leaderboardScreen">
+            <div class="inner-panel" style="max-width:480px;">
+                <div class="menu-title">🏆 RANKINGI</div>
+                <div class="topka-tabs">
+                    <button class="tab-btn active" id="tabCoins" onclick="switchTopka('coins')">Monety</button>
+                    <button class="tab-btn" id="tabGems" onclick="switchTopka('gems')">Gemy</button>
+                    <button class="tab-btn" id="tabTickets" onclick="switchTopka('tickets')">Bilety</button>
+                    <button class="tab-btn" id="tabRebirths" onclick="switchTopka('rebirths')">Rebirthy</button>
+                    <button class="tab-btn" id="tabTime" onclick="switchTopka('totalPlayTimeSeconds')">Czas</button>
+                </div>
+                <div class="leaderboard-container">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Gracz</th>
+                                <th style="text-align:right;" id="lbValueHeader">Wynik</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardBody"></tbody>
+                    </table>
+                </div>
+                <button class="menu-btn" style="background:#555; color:#fff;" onclick="closeSubMenu('leaderboardScreen')">↩ POWRÓT</button>
+            </div>
+        </div>
+
+        <div class="menu-overlay solid-bg hidden" id="statsOverlay">
+            <div class="inner-panel" style="max-width:500px;">
+                <div class="menu-title">📊 STATYSTYKI</div>
+                <div class="stats-grid" id="advancedStatsGrid" style="margin-bottom:15px;"></div>
+                <button class="menu-btn" style="background:#555;" onclick="closeSubMenu('statsOverlay')">↩ POWRÓT</button>
+            </div>
+        </div>
+
+        <div class="ingame-hud" id="ingameHud">
+            <div class="hud-side-menu">
+                <button class="hud-circle-btn" onclick="openMiniMenu()">☰</button>
+                <button class="hud-circle-btn" onclick="toggleApp('friendsOverlay')">👥</button>
+                <button class="hud-circle-btn" onclick="toggleApp('inventoryOverlay')">🎒</button>
+                <button class="hud-circle-btn" onclick="toggleApp('shopOverlay')">🛒</button>
+                <button class="hud-circle-btn" onclick="toggleApp('gamepassesOverlay')">💎</button>
+                <button class="hud-circle-btn" onclick="toggleApp('rebirthsOverlay')">🔄</button>
+                <button class="hud-circle-btn" onclick="toggleApp('worldsOverlay')">🌍</button>
+            </div>
+
+            <div class="currency-container">
+                <div class="currency-box" style="color:#55efc4;">💵 <span id="hudCoins">0</span></div>
+                <div class="currency-box" style="color:#74b9ff;">💎 <span id="hudGems">0</span></div>
+                <div class="currency-box" style="color:#ffeaa7;">🎟️ <span id="hudTickets">0</span></div>
+                <div class="currency-box" style="color:#ff7675;">🔄 <span id="hudRebirths">0</span></div>
+            </div>
+
+            <div class="autoclick-status-node" id="autoclickStatusNode">AUTO-KLIKER: AKTYWNY</div>
+            <button class="action-click-btn" id="actionClickBtn">KLIKAJ</button>
+            <button class="action-click-btn" id="autoClickToggleHardware" style="bottom:15px; right:115px; background:linear-gradient(135deg, #e67e22, #f39c12); display:none; font-size:9px;">AUTO<br>WŁ/WYŁ</button>
+
+            <div class="menu-overlay solid-bg hidden" id="miniPauseMenu" style="z-index:200;">
+                <div class="inner-panel" style="max-width:340px;">
+                    <h3 style="color:var(--accent-color); margin-top:0;">PAUZA I ZYSKI</h3>
+                    <div id="liveActivityStatsBox" style="text-align:left; font-family:monospace; font-size:12px; background:rgba(0,0,0,0.4); padding:10px; border-radius:6px; margin-bottom:15px; line-height:1.5;"></div>
+                    <button class="menu-btn" style="background:rgba(0,255,150,0.2); color:#00ffcc;" onclick="closeMiniMenu()">▶ KONTYNUUJ GRĘ</button>
+                    <button class="menu-btn" onclick="stopGameAndReturnToHub()">↩ WYJDŹ DO MENU (LOBBY)</button>
+                </div>
+            </div>
+
+            <div class="app-overlay" id="friendsOverlay">
+                <div class="app-header">
+                    <h3 style="margin:0; color:var(--accent-color);">👥 Znajomi</h3>
+                    <button class="tab-btn" style="max-width:40px; padding:4px;" onclick="toggleApp('friendsOverlay')">X</button>
+                </div>
+                <div class="friends-list" id="friendsListContainer" style="flex:1; overflow-y:auto; margin-bottom:10px; display:flex; flex-direction:column; gap:5px;"></div>
+                <div class="nickname-box" style="margin:0;">
+                    <input type="text" id="searchFriendInput" placeholder="Nazwa gracza...">
+                    <button class="tab-btn" style="max-width:80px;" onclick="addRealFriend()">Dodaj</button>
+                </div>
+            </div>
+
+            <div class="app-overlay" id="shopOverlay">
+                <div class="app-header">
+                    <div style="display:flex; gap:5px;">
+                        <button class="tab-btn active" id="btnShopCatEggs" onclick="switchShopCategory('eggs')">🥚 Jajka</button>
+                        <button class="tab-btn" id="btnShopCatOthers" onclick="switchShopCategory('others')">⚙️ Ulepszenia</button>
+                    </div>
+                    <button class="tab-btn" style="max-width:40px; padding:4px;" onclick="toggleApp('shopOverlay')">X</button>
+                </div>
+                <div class="window-layout">
+                    <div class="list-side" id="shopItemsContainer"></div>
+                    <div class="view-side" id="shopItemPreview"></div>
+                </div>
+            </div>
+
+            <div class="app-overlay" id="inventoryOverlay">
+                <div class="app-header">
+                    <div class="topka-tabs" style="margin:0; max-width:85%; grid-template-columns: repeat(4, 1fr);">
+                        <button class="tab-btn active" id="tabInvEggs" onclick="switchInvTab('eggs')">🥚 Jaja</button>
+                        <button class="tab-btn" id="tabInvPets" onclick="switchInvTab('pets')">🐾 Pety</button>
+                        <button class="tab-btn" id="tabInvCostumes" onclick="switchInvTab('costumes')">👕 Stroje</button>
+                        <button class="tab-btn" id="tabInvAmulets" onclick="switchInvTab('amulets')">📿 Amulety</button>
+                    </div>
+                    <button class="tab-btn" style="max-width:40px;" onclick="toggleApp('inventoryOverlay')">X</button>
+                </div>
+                <div class="window-layout">
+                    <div class="list-side" id="invItemsContainer"></div>
+                    <div class="view-side" id="invItemPreview"></div>
+                </div>
+            </div>
+
+            <div class="app-overlay" id="gamepassesOverlay">
+                <div class="app-header">
+                    <h3 style="margin:0; color:#fdcb6e;">💎 Specjalne Karty (Gemy)</h3>
+                    <button class="tab-btn" style="max-width:40px;" onclick="toggleApp('gamepassesOverlay')">X</button>
+                </div>
+                <div class="list-side" id="gamepassesListContainer" style="flex:1;"></div>
+            </div>
+
+            <div class="app-overlay" id="rebirthsOverlay" style="justify-content:center; align-items:center; background: rgba(4, 4, 12, 0.85);">
+                <div class="inner-panel" style="max-width: 460px;">
+                    <h2 style="color:#ff7675; margin-bottom: 5px;">🔄 System Rebirth</h2>
+                    <p style="font-size:12px; opacity:0.8; margin-bottom: 15px;">Poświęć surowce, by zyskać nieskończoną moc leśną.</p>
+                    
+                    <div style="background:rgba(0,0,0,0.5); padding:12px; border-radius:8px; border:1px solid var(--panel-border); text-align:left; font-size:13px; margin-bottom:15px; line-height:1.6;">
+                        • Obecny poziom odrodzenia: <b style="color:#ff7675;" id="rbCurrentLvl">0</b><br>
+                        • Stały bonus do zarobków: <b style="color:#55efc4;" id="rbCurrentBonus">x1.0</b><br>
+                        • Koszt następnego Rebirtha: <b style="color:#f1c40f;" id="rbNextCost">500,000,000 💵</b><br>
+                        <span style="color:#ff4444; font-size:11px; display:block; margin-top:5px;">⚠️ UWAGA: Rebirth zresetuje Twoje Monety, Gemy i Bilety!</span>
+                    </div>
+
+                    <button class="menu-btn" style="background: #e74c3c; color:#fff;" onclick="performRebirthAction()">ZAKUP REBIRTH ODRADZANIE</button>
+                    <button class="menu-btn" style="background: #555; margin-top: 15px;" onclick="document.getElementById('rebirthsOverlay').style.display='none';">Wróć</button>
+                </div>
+            </div>
+
+            <div class="app-overlay" id="worldsOverlay" style="justify-content:center; align-items:center; background: rgba(4, 4, 12, 0.85);">
+                <div class="inner-panel" style="max-width: 500px; max-height:90vh; display:flex; flex-direction:column;">
+                    <h2 style="color:var(--accent-color); margin-bottom:5px;">🌍 Spis Krain i Światów</h2>
+                    <p style="font-size:11px; opacity:0.7; margin-bottom:10px;">Podróżuj do światów, by zyskać olbrzymie globalne mnożniki surowców.</p>
+                    
+                    <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:6px; margin-bottom:15px; padding-right:5px;" id="worldsContainerList"></div>
+
+                    <button class="menu-btn" style="background: #555;" onclick="document.getElementById('worldsOverlay').style.display='none';">Wróć</button>
+                </div>
+            </div>
+
+            <div class="hatch-popup-overlay" id="hatchPopup">
+                <div class="hatch-card" id="hatchCardNode"></div>
+            </div>
+
+        </div>
+
+        <canvas id="gameCanvas" width="600" height="600"></canvas>
+    </div>
+
+    <div class="dev-chat-box" id="devChatBox">
+        <input type="text" id="devChatInput" placeholder="Kody: /add lub /reset...">
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // BAZA PODSTAWOWA 9 ŚWIATÓW
+        const BASE_WORLDS = [
+            { id: 1, name: "🌲 Mroczny Skraj", req: 0, mult: 1, emoji: "🌲" },
+            { id: 2, name: "🪵 Gęstwiny Pradawnych", req: 3, mult: 5, emoji: "🪵" },
+            { id: 3, name: "🍄 Bagno Zarazy", req: 10, mult: 25, emoji: "🍄" },
+            { id: 4, name: "🔮 Kryształowa Grota", req: 50, mult: 120, emoji: "🔮" },
+            { id: 5, name: "🌋 Piekielne Zgliszcza", req: 250, mult: 600, emoji: "🌋" },
+            { id: 6, name: "🌌 Przestrzeń Kosmiczna", req: 1000, mult: 3500, emoji: "🌌" },
+            { id: 7, name: "⚡ Wymiar Kwantowy", req: 5000, mult: 18000, emoji: "⚡" },
+            { id: 8, name: "👺 Otchłań Nienawiści", req: 25000, mult: 100000, emoji: "👺" },
+            { id: 9, name: "👑 Boski Panteon", req: 100000, mult: 1000000, emoji: "👑" }
+        ];
+
+        // DYNAMICZNY GENERATOR KOLEJNYCH 50 ŚWIATÓW (Razem 59 Światów!)
+        const WORLDS_DB = [...BASE_WORLDS];
+        const worldNames = [
+            "Widmowa Oaza", "Lodowa Pustka", "Złoty El Dorado", "Cyber-Nekropolia", "Neonowy Wykop", 
+            "Eteryczna Chmura", "Astralny Bastion", "Tytaniczna Kuźnia", "Runiczny Krater", "Wulkan Cienia",
+            "Smaragdowy Grzbiet", "Otchłań Oceanu", "Podniebne Królestwo", "Matryca Chaosu", "Wymiar Antymaterii",
+            "Plazmowa Rafineria", "Kryształowe Pustkowie", "Galaktyczne Serce", "Zaginiony Limbus", "Przeklęta Arkadia",
+            "Karmazynowy Horyzont", "Zwieńczenie Czasu", "Słoneczna Iglica", "Niebiańska Przystań", "Rdzeń Anomalii",
+            "Wasteland Przeznaczenia", "Płonący Labirynt", "Świątynia Iluzji", "Nieskończona Osobliwość", "Mgławica Feniksa",
+            "Grawitacyjny Tunel", "Srebrna Cytadela", "Mroczna Horda", "Eko-Kopuła Przyszłości", "Żelazna Granica",
+            "Ostatni Fort", "Kwantowy Zmierzch", "Wymiar Pradawnych Bogów", "Kolebka Życia", "Pustka Nicości",
+            "Monolit Przebudzenia", "Cyfrowy Eden", "Zasłona Zapomnienia", "Brama Walhalli", "Supernowa X",
+            "Mityczny Tartar", "Strefa Zero", "Wyraj Duchów", "Władztwo Chronosa", "Absolutny Absolut"
+        ];
+
+        for (let i = 0; i < 50; i++) {
+            let id = 10 + i;
+            let req = 250000 + (i * 150000); // Stopniowe wymagania Rebirthów
+            let mult = 5000000 * Math.pow(1.8, i); // Potężne skalowanie mnożników
+            let emojis = ["🪐", "🛸", "☄️", "💥", "🌀", "💠", "☣️", "⚜️", "🔱", "🕋"];
+            WORLDS_DB.push({
+                id: id,
+                name: `${emojis[i % emojis.length]} ${worldNames[i] || "Kraina Gwiazd " + id}`,
+                req: req,
+                mult: Math.floor(mult),
+                emoji: emojis[i % emojis.length]
+            });
+        }
+
+        // DYNAMICZNA GENERACJA PRZEDMIOTÓW DLA KAŻDEGO ŚWIATA (10 JAJ, STROJE, AMULETY NA ŚWIAT)
+        function getEggsForWorld(worldId) {
+            let eggList = [];
+            let isWorld2OrHigher = worldId >= 2;
+            let baseCost = isWorld2OrHigher ? 500000000 * Math.pow(3, worldId - 2) : 5000;
+
+            for(let i=0; i<10; i++) {
+                let eggId = (worldId * 100) + i;
+                let cost = baseCost * Math.pow(2.2, i);
+                let colors = ["#8c7ae6", "#b2bec3", "#7f8c8d", "#cd7f32", "#dfe6e9", "#bdc3c7", "#f1c40f", "#74b9ff", "#e74c3c", "#9b59b6"];
+                let emojis = ["🥚", "🥚", "📦", "💎", "🔮", "🔥", "⚡", "🌟", "👑", "🌌"];
+                
+                eggList.push({
+                    id: eggId,
+                    worldId: worldId,
+                    name: `Jajo Świata ${worldId} - Poziom ${i+1}`,
+                    cost: Math.floor(cost),
+                    color: colors[i % colors.length],
+                    emoji: emojis[i % emojis.length],
+                    desc: `Unikalne jajo z krainy ${worldId}. Zawiera pety o potężnych mnożnikach bazowych!`,
+                    pool: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] // Korzysta z puli petów
+                });
+            }
+            return eggList;
+        }
+
+        function getCostumesForWorld(worldId) {
+            let list = [];
+            let baseCost = 2000 * Math.pow(4, worldId - 1);
+            let emojis = ["🧢", "🪖", "🎩", "🎭", "👑", "🧥", "🥋", "🛡️", "🦾", "🚀"];
+            for(let i=0; i<3; i++) {
+                let cId = (worldId * 100) + i;
+                let mul = 1.5 * worldId * (i + 1);
+                list.push({
+                    id: cId,
+                    worldId: worldId,
+                    name: `Pancerz Krainy ${worldId} v${i+1}`,
+                    cost: Math.floor(baseCost * (i+1)),
+                    emoji: emojis[(worldId + i) % emojis.length],
+                    cM: parseFloat((mul).toFixed(1)),
+                    gM: parseFloat((mul * 0.8).toFixed(1)),
+                    tM: parseFloat((1 + worldId * 0.2).toFixed(1)),
+                    desc: `Specjalny strój wykuty w Świecie ${worldId}. Gwarantuje unikalny przyrost mocy.`
+                });
+            }
+            return list;
+        }
+
+        function getAmuletsForWorld(worldId) {
+            let list = [];
+            let baseCost = 20000 * Math.pow(3.5, worldId - 1);
+            let emojis = ["📿", "🔮", "❤️", "⭐", "🧿", "💎", "🏵️", "🔑", "🔔", "🏅"];
+            for(let i=0; i<2; i++) {
+                let aId = (worldId * 100) + i;
+                let mul = 2.0 * worldId * (i + 1);
+                list.push({
+                    id: aId,
+                    worldId: worldId,
+                    name: `Wisior Świata ${worldId} Kryształ ${i+1}`,
+                    cost: Math.floor(baseCost * (i+1)),
+                    emoji: emojis[(worldId + i) % emojis.length],
+                    cM: parseFloat((mul).toFixed(1)),
+                    gM: parseFloat((mul * 0.9).toFixed(1)),
+                    tM: parseFloat((1 + worldId * 0.3).toFixed(1)),
+                    desc: `Amulet nasycony mistyczną energią Świata ${worldId}. Drastycznie zwiększa ręczne zyski.`
+                });
+            }
+            return list;
+        }
+
+        // STRUKTURY STATYCZNE (DLA KOMPATYBILNOŚCI)
+        const PET_DB = [
+            { id:0, name:"Chomik", rarity:"Zwyczajny", cB:2, gB:1.1, tB:1.01, emoji:"🐹" },
+            { id:1, name:"Myszka", rarity:"Zwyczajny", cB:3, gB:1.2, tB:1.01, emoji:"🐭" },
+            { id:2, name:"Królik", rarity:"Zwyczajny", cB:5, gB:1.3, tB:1.02, emoji:"🐰" },
+            { id:3, name:"Kot", rarity:"Zwyczajny", cB:8, gB:1.4, tB:1.02, emoji:"🐱" },
+            { id:4, name:"Pies", rarity:"Rzadki", cB:15, gB:1.7, tB:1.04, emoji:"🐶" },
+            { id:5, name:"Szop", rarity:"Rzadki", cB:25, gB:2.0, tB:1.05, emoji:"🦝" },
+            { id:6, name:"Lis", rarity:"Rzadki", cB:45, gB:2.4, tB:1.06, emoji:"🦊" },
+            { id:7, name:"Borsuk", rarity:"Rzadki", cB:80, gB:3.0, tB:1.08, emoji:"🦡" },
+            { id:8, name:"Wilk", rarity:"Epicki", cB:150, gB:4.0, tB:1.12, emoji:"🐺" },
+            { id:9, name:"Dzik", rarity:"Epicki", cB:300, gB:5.5, tB:1.15, emoji:"🐗" },
+            { id:10, name:"Jeleń", rarity:"Epicki", cB:600, gB:7.5, tB:1.20, emoji:"🦌" },
+            { id:11, name:"Sowa", rarity:"Epicki", cB:1200, gB:10.0, tB:1.25, emoji:"🦉" },
+            { id:12, name:"Pantera", rarity:"Legendarny", cB:2500, gB:15.0, tB:1.35, emoji:"🐆" },
+            { id:13, name:"Gepard", rarity:"Legendarny", cB:5500, gB:22.0, tB:1.50, emoji:"🐆" },
+            { id:14, name:"Tygrys", rarity:"Legendarny", cB:12000, gB:35.0, tB:1.70, emoji:"🐅" },
+            { id:15, name:"Lew", rarity:"Legendarny", cB:28000, gB:50.0, tB:2.00, emoji:"🦁" }
+        ];
+
+        const GAMEPASS_DB = [
+            { id:"double_pet", name:"🐾 Dodatkowy Slot Peta", cost:200000, desc:"Pozwala wyposażyć 2 pety jednocześnie i sumować ich moce!" },
+            { id:"x2_coins", name:"🪙 Stały Mnożnik x2 Monety", cost:300000, desc:"Podwaja na zawsze wszystkie zdobywane monety." },
+            { id:"super_luck", name:"🍀 Szczęśliwa Gwiazda", cost:500000, desc:"Zwiększa szansę na gemy i rzadkie pety o 50%." },
+            { id:"mega_click", name:"💥 Klik Zagłady", cost:800000, desc:"Zwiększa siłę każdego ręcznego kliknięcia o 300%!" },
+            { id:"infinite_tickets", name:"🎟️ Biletowy Szał", cost:1500000, desc:"Zwiększa bazową szansę na zdobycie Ticketów trzykrotnie." },
+            { id:"egg_luck_pass", name:"🍀 Szczęśliwy Traf z Jaj (x2)", cost:2000000, desc:"Zwiększa dwukrotnie szansę na trafienie najlepszych i rzadkich petów ze wszystkich jaj." }
+        ];
+
+        let pP = {
+            name: "", coins: 0, gems: 0, tickets: 0, rebirths: 0, currentWorldId: 1, totalPlayTimeSeconds: 0,
+            theme: "dark", lang: "pl", audio: "on", friends: [],
+            ownedEggs: {}, ownedPets: [], ownedCostumes: [], ownedAmulets: [],
+            equippedPet1: null, equippedPet2: null,
+            equippedCostume: null, equippedAmulet: null,
+            amuletUpgrades: {}, costumeEvo: {}, 
+            hasAutoclicker: false, hasOfflineClicker: false,
+            gamepasses: {},
+            statTotalClicks: 0, statTotalCoinsEarned: 0, statTotalGemsEarned: 0, statTotalTicketsEarned: 0,
+            statTotalEggsOpened: 0, statTotalSpentCoins: 0, statLastDisconnectTime: 0
+        };
+
+        let globalDatabase = {};
+        let isPlaying = false; let isPaused = false; let currentTopkaView = 'coins';
+        let animFrame = 0; let activeShopCategory = 'eggs'; let activeInvTab = 'eggs';
+        let shopSelectedObj = null; let invSelectedObj = null;
+        let minuteTracking = { coins: 0, gems: 0, tickets: 0, lastReset: Date.now() };
+
+        let staticTrees = []; let fireflies = []; let fallingLeaves = [];
+
+        function initEnvironment() {
+            staticTrees = [];
+            for (let i = 0; i < 10; i++) {
+                staticTrees.push({
+                    x: Math.random() * 550,
+                    width: 20 + Math.random() * 25,
+                    height: 160 + Math.random() * 140,
+                    swayOffset: Math.random() * Math.PI,
+                    color: ["#05030f", "#090518", "#030206"][Math.floor(Math.random()*3)]
+                });
+            }
+            staticTrees.sort((a,b) => a.x - b.x);
+
+            fireflies = [];
+            for (let i = 0; i < 25; i++) {
+                fireflies.push({
+                    x: Math.random() * 600,
+                    y: Math.random() * 450,
+                    size: 1.2 + Math.random() * 2,
+                    speedY: 0.15 + Math.random() * 0.35,
+                    seed: Math.random() * 100
+                });
+            }
+
+            fallingLeaves = [];
+            for (let i = 0; i < 15; i++) {
+                fallingLeaves.push({
+                    x: Math.random() * 600,
+                    y: Math.random() * -600,
+                    size: 4 + Math.random() * 5,
+                    speedY: 0.6 + Math.random() * 0.9,
+                    speedX: 0.2 + Math.random() * 0.4,
+                    rotation: Math.random() * Math.PI,
+                    rotSpeed: 0.01 + Math.random() * 0.02,
+                    color: ["#27ae60", "#1e824c", "#145a32", "#0e3a21"][Math.floor(Math.random()*4)]
+                });
+            }
+        }
+
+        let audioCtx = null; let musicInterval = null;
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        function playLobbyMusicLoop() {
+            if (pP.audio === "off") return;
+            initAudio();
+            if(musicInterval) clearInterval(musicInterval);
+            const notes = [130.81, 146.83, 155.56, 174.61, 146.83];
+            let step = 0;
+            musicInterval = setInterval(() => {
+                if (pP.audio === "on" && audioCtx && (!isPlaying || isPaused)) {
+                    let osc = audioCtx.createOscillator(); let gainNode = audioCtx.createGain();
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(notes[step % notes.length], audioCtx.currentTime);
+                    gainNode.gain.setValueAtTime(0.02, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.8);
+                    osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+                    osc.start(); osc.stop(audioCtx.currentTime + 1.8);
+                    step++;
+                }
+            }, 1900);
+        }
+
+        function toggleAudioSetting(val) {
+            pP.audio = val;
+            if(val === "off") { if(musicInterval) clearInterval(musicInterval); } else { playLobbyMusicLoop(); }
+            saveGlobalSystem();
+        }
+
+        function triggerPreLobbyLoading() {
+            document.getElementById("splashScreen").classList.add("hidden");
+            initAudio();
+            let screen = document.getElementById("loadingScreen"); let fill = document.getElementById("loadingBarFill");
+            document.getElementById("loadText").innerText = "WCZYTYWANIE MROCZNEGO KLIMATU...";
+            screen.classList.add("active"); fill.style.width = "0%";
+            let p = 0;
+            let intv = setInterval(() => {
+                p += 2; fill.style.width = p + "%";
+                if(p >= 100) {
+                    clearInterval(intv);
+                    screen.classList.remove("active");
+                    finishSystemCoreLoad();
+                }
+            }, 30);
+        }
+
+        function finishSystemCoreLoad() {
+            let stored = localStorage.getItem("cd_global_db_v3");
+            if (stored) globalDatabase = JSON.parse(stored);
+            let activeUser = localStorage.getItem("cd_active_user_v3");
+            
+            initEnvironment();
+            requestAnimationFrame(lobbyRenderLoop);
+
+            if (activeUser && globalDatabase[activeUser]) {
+                pP = globalDatabase[activeUser];
+                validateProfileStructures();
+                applyOfflineEarnings();
+                document.getElementById("displayPlayerName").innerText = pP.name;
+                document.getElementById("mainMenuScreen").classList.remove("hidden");
+            } else {
+                document.getElementById("firstRunScreen").classList.remove("hidden");
+                generateRandomNick('usernameInput');
+            }
+            
+            applyThemeClass(pP.theme || "dark");
+            document.getElementById("themeSelect").value = pP.theme || "dark";
+            document.getElementById("audioSelect").value = pP.audio || "on";
+            
+            updateHudDisplay();
+            playLobbyMusicLoop();
+
+            setInterval(() => {
+                minuteTracking.coins = 0; minuteTracking.gems = 0; minuteTracking.tickets = 0;
+                minuteTracking.lastReset = Date.now();
+            }, 60000);
+
+            setInterval(() => {
+                if (isPlaying && !isPaused) {
+                    pP.totalPlayTimeSeconds++;
+                    pP.statLastDisconnectTime = Date.now();
+                    saveGlobalSystem();
+                }
+            }, 1000);
+        }
+
+        function lobbyRenderLoop() {
+            if (!isPlaying) {
+                animFrame += 0.02;
+                drawSceneGraphic(false);
+                requestAnimationFrame(lobbyRenderLoop);
+            }
+        }
+
+        function validateProfileStructures() {
+            if (!pP.ownedEggs) pP.ownedEggs = {}; if (!pP.ownedPets) pP.ownedPets = [];
+            if (!pP.ownedCostumes) pP.ownedCostumes = []; if (!pP.ownedAmulets) pP.ownedAmulets = [];
+            if (!pP.amuletUpgrades) pP.amuletUpgrades = {}; if (!pP.costumeEvo) pP.costumeEvo = {};
+            if (!pP.gamepasses) pP.gamepasses = {}; if (!pP.friends) pP.friends = [];
+            if (!pP.audio) pP.audio = "on"; if (!pP.totalPlayTimeSeconds) pP.totalPlayTimeSeconds = 0;
+            if (pP.rebirths === undefined) pP.rebirths = 0;
+            if (pP.currentWorldId === undefined) pP.currentWorldId = 1;
+        }
+
+        function saveGlobalSystem() {
+            if (pP.name) {
+                globalDatabase[pP.name] = pP;
+                localStorage.setItem("cd_global_db_v3", JSON.stringify(globalDatabase));
+            }
+        }
+
+        function applyOfflineEarnings() {
+            if (pP.hasOfflineClicker && pP.statLastDisconnectTime > 0) {
+                let diffSec = Math.floor((Date.now() - pP.statLastDisconnectTime) / 1000);
+                if (diffSec > 30) {
+                    let ticks = Math.min(diffSec, 86400);
+                    let baseCoins = Math.floor(ticks * 0.4);
+                    pP.coins += baseCoins; pP.statTotalCoinsEarned += baseCoins;
+                    alert(`System offline zebrał: ${baseCoins.toLocaleString()} monet podczas Twojej nieobecności!`);
+                }
+            }
+        }
+
+        function generateRandomNick(inputId) {
+            const pre = ["Wędrowiec", "Łowca", "Mroczny", "Zwiadowca", "Rycerz", "Wilk"];
+            const suf = ["Mroku", "Lasu", "Nocy", "Pustki", "Zorzy"];
+            let res = pre[Math.floor(Math.random()*pre.length)] + suf[Math.floor(Math.random()*suf.length)];
+            if(res.length > 12) res = res.substring(0, 12);
+            document.getElementById(inputId).value = res;
+        }
+
+        function submitFirstRun() {
+            let nick = document.getElementById("usernameInput").value.trim();
+            if(nick.length < 4 || nick.length > 12) {
+                alert("Twój nick musi zawierać od 4 do 12 liter!");
+                return;
+            }
+            pP.name = nick;
+            validateProfileStructures();
+            localStorage.setItem("cd_active_user_v3", nick);
+            saveGlobalSystem();
+            document.getElementById("displayPlayerName").innerText = nick;
+            document.getElementById("firstRunScreen").classList.add("hidden");
+            document.getElementById("mainMenuScreen").classList.remove("hidden");
+        }
+
+        function changeNicknameHardware() {
+            let newNick = document.getElementById("changeNickInput").value.trim();
+            if(newNick.length < 4 || newNick.length > 12) { 
+                alert("Twój nick musi zawierać od 4 do 12 liter!"); 
+                return; 
+            }
+            if(confirm(`Czy chcesz zmienić imię na: ${newNick}?`)) {
+                delete globalDatabase[pP.name];
+                pP.name = newNick;
+                localStorage.setItem("cd_active_user_v3", newNick);
+                saveGlobalSystem();
+                document.getElementById("displayPlayerName").innerText = newNick;
+                document.getElementById("changeNickInput").value = "";
+                alert("Zmieniono pomyślnie!");
+            }
+        }
+
+        function updateHudDisplay() {
+            document.getElementById("hudCoins").innerText = Math.floor(pP.coins).toLocaleString();
+            document.getElementById("hudGems").innerText = Math.floor(pP.gems).toLocaleString();
+            document.getElementById("hudTickets").innerText = Math.floor(pP.tickets).toLocaleString();
+            document.getElementById("hudRebirths").innerText = pP.rebirths.toLocaleString();
+            document.getElementById("autoclickStatusNode").style.display = pP.hasAutoclicker ? "block" : "none";
+            document.getElementById("autoClickToggleHardware").style.display = pP.hasAutoclicker ? "block" : "none";
+        }
+
+        function applyThemeClass(t) { document.body.className=""; if(t!=="dark") document.body.classList.add("theme-"+t); pP.theme=t; saveGlobalSystem(); }
+
+        function getRebirthCost() { return 500000000 * (pP.rebirths + 1); }
+
+        function updateRebirthPanelUI() {
+            document.getElementById("rbCurrentLvl").innerText = pP.rebirths;
+            document.getElementById("rbCurrentBonus").innerText = "x" + (1 + pP.rebirths * 0.2).toFixed(1);
+            document.getElementById("rbNextCost").innerText = getRebirthCost().toLocaleString() + " 💵";
+        }
+
+        function performRebirthAction() {
+            let cost = getRebirthCost();
+            if (pP.coins < cost) {
+                document.getElementById('rebirthsOverlay').style.display = 'none';
+                // Tworzenie dynamicznego powiadomienia na środku wrapperu gry
+                let alertNode = document.createElement("div");
+                alertNode.style = "position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(255,7,58,0.95); color:white; padding:15px 25px; border:2px solid white; border-radius:10px; font-weight:bold; font-size:16px; z-index:999; text-align:center; box-shadow:0 0 20px rgba(0,0,0,0.5); font-family:sans-serif;";
+                alertNode.innerHTML = `⚠️ BRAKUJE CI WYMAGANYCH WALUT!<br><span style="font-size:12px; opacity:0.8;">Potrzebujesz: ${cost.toLocaleString()} 💵</span>`;
+                document.getElementById("gameWrapper").appendChild(alertNode);
+                setTimeout(() => { alertNode.remove(); }, 2500); // Znika po 2.5 sekundy
+                return;
+            }
+            if (confirm("Czy na pewno chcesz wykonać Rebirth? Zresetuje to Twoje aktualne monety, gemy oraz bilety w zamian za potężny mnożnik x1.2!")) {
+                pP.coins = 0; pP.gems = 0; pP.tickets = 0;
+                pP.rebirths += 1;
+                alert("Odrodzenie zakończone sukcesem! Twoja moc wzrosła!");
+                saveGlobalSystem(); updateHudDisplay(); updateRebirthPanelUI();
+            }
+        }
+
+        function getGlobalMultipliers() {
+            let m = { coins: 1, gems: 1, tickets: 1 };
+            let p1 = pP.ownedPets[pP.equippedPet1];
+            if (p1) {
+                let d = PET_DB.find(x => x.id === p1.id);
+                if (d) { let petMul = p1.evo === 'gold' ? 2 : (p1.evo === 'rainbow' ? 4 : 1); m.coins += (d.cB * petMul); m.gems += (d.gB * petMul * 0.1); m.tickets += (d.tB * petMul * 0.01); }
+            }
+            if (pP.gamepasses["double_pet"] && pP.equippedPet2 !== null) {
+                let p2 = pP.ownedPets[pP.equippedPet2];
+                if (p2) {
+                    let d = PET_DB.find(x => x.id === p2.id);
+                    if (d) { let petMul = p2.evo === 'gold' ? 2 : (p2.evo === 'rainbow' ? 4 : 1); m.coins += (d.cB * petMul); m.gems += (d.gB * petMul * 0.1); m.tickets += (d.tB * petMul * 0.01); }
+                }
+            }
+            if (pP.equippedCostume !== null) {
+                let allCostumes = [];
+                WORLDS_DB.forEach(w => allCostumes.push(...getCostumesForWorld(w.id)));
+                let cData = allCostumes.find(x => x.id === pP.equippedCostume);
+                if (cData) { let costumeMultiplier = (pP.costumeEvo[pP.equippedCostume] === 'gold') ? 2.5 : 1.0; m.coins *= (cData.cM * costumeMultiplier); m.gems *= (cData.gM * costumeMultiplier); m.tickets *= (cData.tM * costumeMultiplier); }
+            }
+            if (pP.equippedAmulet !== null) {
+                let allAmulets = [];
+                WORLDS_DB.forEach(w => allAmulets.push(...getAmuletsForWorld(w.id)));
+                let aData = allAmulets.find(x => x.id === pP.equippedAmulet);
+                if (aData) { let lvl = pP.amuletUpgrades[pP.equippedAmulet] || 0; m.coins *= (aData.cM * (1 + lvl * 0.5)); m.gems *= (aData.gM * (1 + lvl * 0.5)); m.tickets *= (aData.tM * (1 + lvl * 0.5)); }
+            }
+            if (pP.gamepasses["x2_coins"]) m.coins *= 2;
+            if (pP.gamepasses["super_luck"]) m.gems *= 1.5;
+            if (pP.gamepasses["infinite_tickets"]) m.tickets *= 3;
+            
+            let rbMultiplier = 1 + (pP.rebirths * 0.2);
+            m.coins *= rbMultiplier; m.gems *= rbMultiplier; m.tickets *= rbMultiplier;
+
+            let currentWorldObj = WORLDS_DB.find(w => w.id === pP.currentWorldId) || WORLDS_DB[0];
+            m.coins *= currentWorldObj.mult; m.gems *= currentWorldObj.mult; m.tickets *= currentWorldObj.mult;
+
+            return m;
+        }
+
+        function processClickAction(isAuto = false) {
+            pP.statTotalClicks++;
+            let multi = getGlobalMultipliers();
+            let baseClickMul = (!isAuto && pP.gamepasses["mega_click"]) ? 4.0 : 1.0;
+            let coinGain = multi.coins * baseClickMul;
+            let gemChance = 3 * multi.gems;
+            let ticketChance = 0.3 * multi.tickets;
+
+            pP.coins += coinGain; pP.statTotalCoinsEarned += coinGain; minuteTracking.coins += coinGain;
+            if (Math.random() * 100 < gemChance) { pP.gems += 1; pP.statTotalGemsEarned += 1; minuteTracking.gems += 1; }
+            if (Math.random() * 100 < ticketChance) { pP.tickets += 1; pP.statTotalTicketsEarned += 1; minuteTracking.tickets += 1; }
+            updateHudDisplay();
+        }
+
+        let clickHoldInterval = null;
+        const actionBtn = document.getElementById("actionClickBtn");
+
+        function startHoldClick() {
+            processClickAction(false);
+            if(clickHoldInterval) clearInterval(clickHoldInterval);
+            clickHoldInterval = setInterval(() => { processClickAction(false); }, 250);
+        }
+        function stopHoldClick() { if(clickHoldInterval) { clearInterval(clickHoldInterval); clickHoldInterval = null; } }
+
+        actionBtn.addEventListener("mousedown", startHoldClick);
+        actionBtn.addEventListener("mouseup", stopHoldClick);
+        actionBtn.addEventListener("mouseleave", stopHoldClick);
+        actionBtn.addEventListener("touchstart", (e) => { e.preventDefault(); startHoldClick(); });
+        actionBtn.addEventListener("touchend", stopHoldClick);
+
+        let hardwareAutoOn = false;
+        document.getElementById("autoClickToggleHardware").addEventListener("click", () => {
+            hardwareAutoOn = !hardwareAutoOn;
+            document.getElementById("autoClickToggleHardware").style.border = hardwareAutoOn ? "2px solid #fff" : "none";
+        });
+        setInterval(() => { if(isPlaying && !isPaused && pP.hasAutoclicker && hardwareAutoOn) processClickAction(true); }, 300);
+
+        function switchShopCategory(cat) {
+            activeShopCategory = cat; shopSelectedObj = null;
+            document.getElementById("btnShopCatEggs").className = cat === 'eggs' ? "tab-btn active" : "tab-btn";
+            document.getElementById("btnShopCatOthers").className = cat === 'others' ? "tab-btn active" : "tab-btn";
+            document.getElementById("shopItemPreview").innerHTML = "";
+            renderShopList();
+        }
+
+        function renderShopList() {
+            let container = document.getElementById("shopItemsContainer"); container.innerHTML = "";
+            if (activeShopCategory === 'eggs') {
+                let currentWorldEggs = getEggsForWorld(pP.currentWorldId);
+                currentWorldEggs.forEach(egg => {
+                    let div = document.createElement("div"); div.className = "item-row";
+                    div.onclick = () => selectShopItem(egg, 'egg');
+                    div.innerHTML = `<span style="color:${egg.color}; font-weight:bold;">${egg.emoji} W${egg.worldId}-${egg.name.split(' - ')[1]}</span> <span style="color:#55efc4;">${egg.cost.toLocaleString()} 💵</span>`;
+                    container.appendChild(div);
+                });
+            } else {
+                let div1 = document.createElement("div"); div1.className = "item-row";
+                div1.onclick = () => selectShopItem({ id:'autoclicker', name:'⚡ AutoClicker', cost:1000000, desc:'System, który automatycznie generuje kliknięcia w tle bez Twojego wysiłku.' }, 'other');
+                div1.innerHTML = `<span>⚡ Auto-Kliker</span> <span style="color:#55efc4;">1,000,000 💵</span>`;
+                container.appendChild(div1);
+
+                let div2 = document.createElement("div"); div2.className = "item-row";
+                div2.onclick = () => selectShopItem({ id:'offlineclicker', name:'💤 Zyski Offline', cost:5000000, desc:'Pozwala na zbieranie i kumulowanie monet nawet wtedy, gdy całkowicie wyłączysz grę.' }, 'other');
+                div2.innerHTML = `<span>💤 Zyski Offline</span> <span style="color:#55efc4;">5,000,000 💵</span>`;
+                container.appendChild(div2);
+            }
+        }
+
+        function selectShopItem(item, type) {
+            shopSelectedObj = { item, type };
+            let preview = document.getElementById("shopItemPreview");
+            preview.innerHTML = `
+                <h4 style="margin:0 0 10px 0;">${item.name}</h4>
+                <p style="font-size:12px; opacity:0.85; line-height:1.4;">${item.desc || "Brak dodatkowego opisu przedmiotu."}</p>
+                <p style="font-size:12px;">Koszt: <b style="color:#55efc4;">${item.cost.toLocaleString()} 💵</b></p>
+                <button class="menu-btn" style="background:#27ae60;" onclick="buyShopItem()">KUP PRZEDMIOT</button>
+            `;
+        }
+
+        function buyShopItem() {
+            if(!shopSelectedObj) return;
+            let s = shopSelectedObj;
+            if (pP.coins < s.item.cost) { alert("Masz za mało monet!"); return; }
+
+            if (s.type === 'egg') {
+                pP.coins -= s.item.cost; pP.statTotalSpentCoins += s.item.cost;
+                if(!pP.ownedEggs[s.item.id]) pP.ownedEggs[s.item.id] = 0;
+                pP.ownedEggs[s.item.id]++; alert("Zakupiono jajo! Znajdziesz je w ekwipunku.");
+            } else {
+                if (s.item.id === 'autoclicker') { if (pP.hasAutoclicker) { alert("Już to posiadasz!"); return; } pP.coins -= s.item.cost; pP.hasAutoclicker = true; } 
+                else { if (pP.hasOfflineClicker) { alert("Już to posiadasz!"); return; } pP.coins -= s.item.cost; pP.hasOfflineClicker = true; }
+                alert("Zakup pomyślny!");
+            }
+            saveGlobalSystem(); updateHudDisplay(); switchShopCategory(activeShopCategory);
+        }
+
+        function renderWorldsOverlayUI() {
+            let container = document.getElementById("worldsContainerList"); container.innerHTML = "";
+            WORLDS_DB.forEach(w => {
+                let unlocked = pP.rebirths >= w.req; let active = pP.currentWorldId === w.id;
+                let card = document.createElement("div"); card.className = "item-row";
+                if(active) card.style.borderColor = "var(--accent-color)";
+                card.innerHTML = `
+                    <div style="text-align:left;">
+                        <b style="color:${unlocked?'#fff':'#777'}">${w.emoji} ${w.name}</b><br>
+                        <small style="color:#95a5a6;">Wymaga: ${w.req.toLocaleString()} 🔄 | Bonus: x${w.mult.toLocaleString()}</small>
+                    </div>
+                    <button class="tab-btn" style="width:90px; background:${active?'#27ae60':(unlocked?'#2980b9':'#555')}" ${unlocked?'':'disabled'} onclick="travelToWorld(${w.id})">
+                        ${active?'OBECNY':(unlocked?'PODRÓŻ':'ZABLOK.')}
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function travelToWorld(wId) {
+            let wObj = WORLDS_DB.find(x => x.id === wId);
+            if(wObj && pP.rebirths >= wObj.req) {
+                pP.currentWorldId = wId; alert(`Przeniosłeś się do świata: ${wObj.name}! Wszystkie zyski wzrosły!`);
+                saveGlobalSystem(); renderWorldsOverlayUI();
+            }
+        }
+
+        function toggleApp(id) {
+            let target = document.getElementById(id); let state = target.style.display === "flex";
+            document.querySelectorAll(".app-overlay").forEach(el => el.style.display = "none");
+            if (!state) {
+                target.style.display = "flex";
+                if (id === 'inventoryOverlay') switchInvTab(activeInvTab);
+                if (id === 'shopOverlay') switchShopCategory(activeShopCategory);
+                if (id === 'friendsOverlay') renderFriendsList();
+                if (id === 'gamepassesOverlay') renderGamepassesList();
+                if (id === 'rebirthsOverlay') updateRebirthPanelUI();
+                if (id === 'worldsOverlay') renderWorldsOverlayUI();
+            } else { target.style.display = "none"; }
+        }
+
+        function switchInvTab(tab) {
+            activeInvTab = tab; invSelectedObj = null;
+            ['tabInvEggs', 'tabInvPets', 'tabInvCostumes', 'tabInvAmulets'].forEach(id => document.getElementById(id).className = "tab-btn");
+            let actId = tab==='eggs'?'tabInvEggs':(tab==='pets'?'tabInvPets':(tab==='costumes'?'tabInvCostumes':'tabInvAmulets'));
+            document.getElementById(actId).className = "tab-btn active";
+            document.getElementById("invItemPreview").innerHTML = "";
+            renderInvList();
+        }
+
+        function renderInvList() {
+            let container = document.getElementById("invItemsContainer"); container.innerHTML = "";
+            if (activeInvTab === 'eggs') {
+                let allPossibleEggs = [];
+                WORLDS_DB.forEach(w => allPossibleEggs.push(...getEggsForWorld(w.id)));
+                allPossibleEggs.forEach(egg => {
+                    let count = pP.ownedEggs[egg.id] || 0;
+                    if(count > 0) {
+                        let div = document.createElement("div"); div.className = "item-row";
+                        div.onclick = () => selectInvItem({egg, count}, 'egg');
+                        div.innerHTML = `<span style="color:${egg.color};">${egg.emoji} W${egg.worldId}-${egg.name.split(' - ')[1]}</span> <span>x${count}</span>`;
+                        container.appendChild(div);
+                    }
+                });
+            } else if (activeInvTab === 'pets') {
+                pP.ownedPets.forEach((petObj, index) => {
+                    let d = PET_DB.find(x => x.id === petObj.id); if(!d) return;
+                    let div = document.createElement("div"); div.className = "item-row";
+                    div.onclick = () => selectInvItem({petObj, d, index}, 'pet');
+                    let eqLabel = (pP.equippedPet1 === index) ? " [Główny]" : ((pP.equippedPet2 === index) ? " [Dodatkowy]" : "");
+                    div.innerHTML = `<span>${d.emoji} ${d.name}${eqLabel}</span>`;
+                    container.appendChild(div);
+                });
+            } else if (activeInvTab === 'costumes') {
+                let worldCostumes = getCostumesForWorld(pP.currentWorldId);
+                worldCostumes.forEach(cos => {
+                    let owned = pP.ownedCostumes.includes(cos.id);
+                    let eq = pP.equippedCostume === cos.id ? " [ZAŁOŻONY]" : "";
+                    let div = document.createElement("div"); div.className = "item-row";
+                    div.onclick = () => selectInvItem(cos, 'costume');
+                    div.innerHTML = `<span>${cos.emoji} ${cos.name}${eq}</span>`;
+                    container.appendChild(div);
+                });
+            } else if (activeInvTab === 'amulets') {
+                let worldAmulets = getAmuletsForWorld(pP.currentWorldId);
+                worldAmulets.forEach(amu => {
+                    let owned = pP.ownedAmulets.includes(amu.id);
+                    let eq = pP.equippedAmulet === amu.id ? " [ZAŁOŻONY]" : "";
+                    let lvl = pP.amuletUpgrades[amu.id] || 0;
+                    let div = document.createElement("div"); div.className = "item-row";
+                    div.onclick = () => selectInvItem(amu, 'amulet');
+                    div.innerHTML = `<span>${amu.emoji} ${amu.name} (+${lvl})${eq}</span>`;
+                    container.appendChild(div);
+                });
+            }
+        }
+
+        function selectInvItem(obj, type) {
+            let preview = document.getElementById("invItemPreview"); invSelectedObj = { obj, type };
+            if (type === 'egg') {
+                preview.innerHTML = `<h4>${obj.egg.emoji} ${obj.egg.name}</h4><p style="font-size:12px; opacity:0.85;">${obj.egg.desc}</p><button class="menu-btn" style="background:var(--accent-color); color:#000;" onclick="actionExecuteInv()">WYKLUJ JAJO</button>`;
+            } else if (type === 'pet') {
+                preview.innerHTML = `<h4>${obj.d.emoji} ${obj.d.name}</h4><p style="font-size:12px;">Rzadkość: <b>${obj.d.rarity}</b></p><button class="menu-btn" onclick="actionExecuteInv('equip1')">WYPOSAŻ SLOT 1</button><button class="menu-btn" onclick="actionExecuteInv('equip2')">WYPOSAŻ SLOT 2</button>`;
+            } else if (type === 'costume') {
+                let owned = pP.ownedCostumes.includes(obj.id);
+                preview.innerHTML = `<h4>${obj.emoji} ${obj.name}</h4><p style="font-size:11px; color:#74b9ff;">Bonusy: Monety x${obj.cM}, Gemy x${obj.gM}</p>${owned?`<button class="menu-btn" onclick="actionExecuteInv('equipCostume')">ZAŁÓŻ / ZDEJMIJ</button>`:`<button class="menu-btn" onclick="actionExecuteInv('buyCostume')">KUP ZA ${obj.cost.toLocaleString()} 💎</button>`}`;
+            } else if (type === 'amulet') {
+                let owned = pP.ownedAmulets.includes(obj.id);
+                preview.innerHTML = `<h4>${obj.emoji} ${obj.name}</h4><p style="font-size:11px; color:#ffeaa7;">Bonusy: Wszystkie x${obj.cM}</p>${owned?`<button class="menu-btn" onclick="actionExecuteInv('equipAmulet')">ZAŁÓŻ / ZDEJMIJ</button>`:`<button class="menu-btn" onclick="actionExecuteInv('buyAmulet')">KUP ZA ${obj.cost.toLocaleString()} 🎟️</button>`}`;
+            }
+        }
+
+        function actionExecuteInv(subAction = '') {
+            if(!invSelectedObj) return;
+            let type = invSelectedObj.type; let obj = invSelectedObj.obj;
+
+            if (type === 'egg') {
+                pP.ownedEggs[obj.egg.id]--; pP.statTotalEggsOpened++;
+                let pool = [...obj.egg.pool];
+                let pId = pool[Math.floor(Math.random() * pool.length)];
+                let rolled = PET_DB.find(x => x.id === pId);
+                pP.ownedPets.push({ id: rolled.id, evo: 'normal' }); alert(`Wykluto zwierzaka: ${rolled.name}!`);
+            } else if (type === 'pet') {
+                if(subAction === 'equip1') pP.equippedPet1 = (pP.equippedPet1 === obj.index) ? null : obj.index;
+                if(subAction === 'equip2') pP.equippedPet2 = (pP.equippedPet2 === obj.index) ? null : obj.index;
+            } else if (type === 'costume') {
+                if (subAction === 'buyCostume') { if (pP.gems < obj.cost) { alert("Masz za mało gemów!"); return; } pP.gems -= obj.cost; pP.ownedCostumes.push(obj.id); } 
+                else if (subAction === 'equipCostume') { pP.equippedCostume = (pP.equippedCostume === obj.id) ? null : obj.id; }
+            } else if (type === 'amulet') {
+                if (subAction === 'buyAmulet') { if (pP.tickets < obj.cost) { alert("Masz za mało biletów!"); return; } pP.tickets -= obj.cost; pP.ownedAmulets.push(obj.id); } 
+                else if (subAction === 'equipAmulet') { pP.equippedAmulet = (pP.equippedAmulet === obj.id) ? null : obj.id; }
+            }
+            saveGlobalSystem(); updateHudDisplay(); switchInvTab(activeInvTab);
+        }
+
+        function renderGamepassesList() {
+            let container = document.getElementById("gamepassesListContainer"); container.innerHTML = "";
+            GAMEPASS_DB.forEach(gp => {
+                let bought = pP.gamepasses[gp.id] === true;
+                let div = document.createElement("div"); div.className = "item-row";
+                div.innerHTML = `<div><b>${gp.name}</b><br><small>${gp.desc}</small></div>
+                <button class="tab-btn" style="background:${bought?'#27ae60':'#2980b9'}; max-width:120px;" ${bought?'disabled':''} onclick="buyGamepass('${gp.id}', ${gp.cost})">
+                    ${bought?'KUPIONO':gp.cost.toLocaleString()+' 💎'}
+                </button>`;
+                container.appendChild(div);
+            });
+        }
+
+        function buyGamepass(id, cost) {
+            if(pP.gems < cost) return; pP.gems -= cost; pP.gamepasses[id] = true;
+            saveGlobalSystem(); updateHudDisplay(); renderGamepassesList();
+        }
+
+        function renderAdvancedStatsGrid() {
+            document.getElementById("advancedStatsGrid").innerHTML = `
+                <div class="stats-card-node">Wszystkie Kliknięcia: <b>${pP.statTotalClicks || 0}</b></div>
+                <div class="stats-card-node">Zdobyczne Monety: <b>${Math.floor(pP.statTotalCoinsEarned || 0).toLocaleString()}</b></div>
+                <div class="stats-card-node">Zdobyczne Gemy: <b>${(pP.statTotalGemsEarned || 0).toLocaleString()}</b></div>
+                <div class="stats-card-node">Czas w mroku: <b>${Math.floor((pP.totalPlayTimeSeconds || 0)/60)} min.</b></div>
+            `;
+        }
+
+        function addRealFriend() {
+            let n = document.getElementById("searchFriendInput").value.trim(); if(!n || n === pP.name) return;
+            if(globalDatabase[n] && !pP.friends.includes(n)) { pP.friends.push(n); saveGlobalSystem(); renderFriendsList(); }
+        }
+
+        function renderFriendsList() {
+            let container = document.getElementById("friendsListContainer"); container.innerHTML = "";
+            pP.friends.forEach(fNick => {
+                let f = globalDatabase[fNick]; if(!f) return;
+                container.innerHTML += `<div class="item-row"><span>👤 ${f.name}</span><span>💵 ${Math.floor(f.coins).toLocaleString()}</span></div>`;
+            });
+        }
+
+        function switchTopka(view) {
+            currentTopkaView = view;
+            ['tabCoins', 'tabGems', 'tabTickets', 'tabRebirths', 'tabTime'].forEach(id => document.getElementById(id).className = "tab-btn");
+            let targetId = view === 'coins' ? 'tabCoins' : (view === 'gems' ? 'tabGems' : (view === 'tickets' ? 'tabTickets' : (view === 'rebirths' ? 'tabRebirths' : 'tabTime')));
+            document.getElementById(targetId).className = "tab-btn active";
+            refreshLeaderboardRows();
+        }
+
+        function refreshLeaderboardRows() {
+            let arr = Object.values(globalDatabase); arr.sort((a,b) => (b[currentTopkaView]||0) - (a[currentTopkaView]||0));
+            let tbody = document.getElementById("leaderboardBody"); tbody.innerHTML = "";
+            arr.slice(0, 10).forEach((row, idx) => {
+                let displayVal = currentTopkaView === 'totalPlayTimeSeconds' ? Math.floor((row[currentTopkaView]||0)/60) + " min." : Math.floor(row[currentTopkaView]||0).toLocaleString();
+                tbody.innerHTML += `<tr><td>${idx+1}</td><td>${row.name}</td><td style="text-align:right;">${displayVal}</td></tr>`;
+            });
+        }
+
+        function openSubMenu(id) { document.getElementById("mainMenuScreen").classList.add("hidden"); document.getElementById(id).classList.remove("hidden"); if(id==='leaderboardScreen') switchTopka('coins'); if(id==='statsOverlay') renderAdvancedStatsGrid(); }
+        function closeSubMenu(id) { document.getElementById(id).classList.add("hidden"); document.getElementById("mainMenuScreen").classList.remove("hidden"); }
+
+        function triggerInGameLoading() {
+            document.getElementById("mainMenuScreen").classList.add("hidden");
+            let screen = document.getElementById("loadingScreen"); let fill = document.getElementById("loadingBarFill");
+            document.getElementById("loadText").innerText = "PRZECHODZENIE PRZEZ MROCZNY LAS...";
+            screen.classList.add("active"); fill.style.width = "0%";
+            let p = 0;
+            let interval = setInterval(() => {
+                p += 1; fill.style.width = p + "%";
+                if(p >= 100) { clearInterval(interval); setTimeout(() => { screen.classList.remove("active"); runGameWorld(); }, 150); }
+            }, 30);
+        }
+
+        function runGameWorld() { document.getElementById("ingameHud").style.display="block"; isPlaying=true; isPaused=false; updateHudDisplay(); gameLoopEngine(); }
+        function openMiniMenu() {
+            isPaused = true;
+            document.getElementById("liveActivityStatsBox").innerHTML = `<b>Profil:</b> ${pP.name}<br><b>Zyski z ostatniej minuty:</b><br>💵 +${Math.floor(minuteTracking.coins).toLocaleString()}<br>💎 +${minuteTracking.gems}`;
+            document.getElementById("miniPauseMenu").classList.remove("hidden");
+        }
+        function closeMiniMenu() { document.getElementById("miniPauseMenu").classList.add("hidden"); isPaused = false; }
+        function stopGameAndReturnToHub() { isPlaying=false; isPaused=false; stopHoldClick(); saveGlobalSystem(); document.getElementById("ingameHud").style.display="none"; document.getElementById("miniPauseMenu").classList.add("hidden"); document.getElementById("mainMenuScreen").classList.remove("hidden"); playLobbyMusicLoop(); requestAnimationFrame(lobbyRenderLoop); }
+
+        function gameLoopEngine() { if(!isPlaying) return; if(!isPaused) { animFrame += 0.04; drawSceneGraphic(true); } requestAnimationFrame(gameLoopEngine); }
+
+        function drawSceneGraphic(drawPlayerChar = true) {
+            ctx.clearRect(0,0,600,600);
+            let skyGrad = ctx.createLinearGradient(0,0,0,450);
+            skyGrad.addColorStop(0, "#010104"); skyGrad.addColorStop(1, "#110724");
+            ctx.fillStyle = skyGrad; ctx.fillRect(0,0,600,450);
+
+            staticTrees.forEach(tree => {
+                ctx.fillStyle = tree.color;
+                let windSway = Math.sin(animFrame * 0.4 + tree.swayOffset) * 4;
+                ctx.fillRect(tree.x, 450 - tree.height, tree.width, tree.height);
+                ctx.beginPath(); ctx.arc(tree.x + tree.width/2 + windSway, 450 - tree.height, tree.width * 1.7, 0, Math.PI*2); ctx.fill();
+            });
+
+            let groundGrad = ctx.createLinearGradient(0,450,0,600);
+            groundGrad.addColorStop(0, "#060a12"); groundGrad.addColorStop(1, "#010204");
+            ctx.fillStyle = groundGrad; ctx.fillRect(0,450,600,150);
+
+            ctx.fillStyle = "rgba(0, 255, 180, 0.55)";
+            fireflies.forEach(f => {
+                f.y -= f.speedY; f.x += Math.sin(animFrame * 0.5 + f.seed) * 0.25;
+                if(f.y < 0) { f.y = 450; f.x = Math.random() * 600; }
+                ctx.beginPath(); ctx.arc(f.x, f.y, f.size, 0, Math.PI*2); ctx.fill();
+            });
+
+            if (!drawPlayerChar) return;
+            let cX = 300; let cY = 465; let breath = Math.sin(animFrame) * 3.5;
+            // Cień postaci
+            ctx.fillStyle = "rgba(0,0,0,0.4)"; ctx.beginPath(); ctx.ellipse(cX, cY, 35, 10, 0, 0, Math.PI*2); ctx.fill();
+            // Płaszcz/Tułów z gradientem
+            let bodyGrad = ctx.createLinearGradient(cX-20, cY-90, cX+20, cY);
+            bodyGrad.addColorStop(0, "#2c3e50"); bodyGrad.addColorStop(1, "#1a252f");
+            ctx.fillStyle = bodyGrad; ctx.beginPath(); ctx.roundRect(cX - 20, cY - 90 + breath, 40, 75, [15, 15, 5, 5]); ctx.fill();
+            // Głowa
+            ctx.fillStyle = "#e0ae95"; ctx.beginPath(); ctx.arc(cX, cY - 110 + breath, 18, 0, Math.PI*2); ctx.fill();
+            // Maska / Kaptur
+            ctx.fillStyle = "#111122"; ctx.beginPath(); ctx.arc(cX, cY - 112 + breath, 18, 0, Math.PI, true); ctx.fill();
+            // Świecące oczy
+            ctx.fillStyle = pP.theme === "green" ? "#39ff14" : "var(--accent-color)";
+            ctx.shadowBlur = 10; ctx.shadowColor = ctx.fillStyle;
+            ctx.beginPath(); ctx.arc(cX - 6, cY - 110 + breath, 3, 0, Math.PI*2); ctx.arc(cX + 6, cY - 110 + breath, 3, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 0; // Reset cienia do reszty rysowania
+
+            drawSinglePetNode(cX - 65, cY - 45, pP.equippedPet1);
+            if (pP.gamepasses["double_pet"]) drawSinglePetNode(cX + 65, cY - 45, pP.equippedPet2);
+
+            ctx.font = "bold 13px monospace"; ctx.fillStyle = "#ffffff"; ctx.textAlign = "center";
+            let activeWorldObj = WORLDS_DB.find(w => w.id === pP.currentWorldId) || WORLDS_DB[0];
+            ctx.fillText(pP.name + ` (${activeWorldObj.emoji})`, cX, cY - 145 + breath);
+        }
+
+        function drawSinglePetNode(x, y, petIndex) {
+            if(petIndex === null || !pP.ownedPets[petIndex]) return;
+            let petObj = pP.ownedPets[petIndex]; let d = PET_DB.find(v => v.id === petObj.id); if(!d) return;
+            ctx.font = "26px Arial"; ctx.fillText(d.emoji, x, y + Math.sin(animFrame * 2.2 + x) * 5);
+        }
+
+        function exitGame() { alert("Zapisano stan gry!"); }
+
+        window.addEventListener("keydown", (e) => { 
+            if(e.key === "Escape" && isPlaying) { if(isPaused) closeMiniMenu(); else openMiniMenu(); }
+            if(e.key === "F10") { let box = document.getElementById("devChatBox"); box.style.display = box.style.display === "block" ? "none" : "block"; }
+        });
+        document.getElementById("devChatInput").addEventListener("keydown", (e) => {
+            if(e.key === "Enter") {
+                let cmd = e.target.value.trim();
+                if(cmd === "/reset") { localStorage.clear(); location.reload(); }
+                if(cmd === "/add") { pP.coins += 999999999999999; pP.gems += 50000000; pP.tickets += 50000000; pP.rebirths += 500000; updateHudDisplay(); saveGlobalSystem(); }
+                e.target.value = ""; document.getElementById("devChatBox").style.display = "none";
+            }
+        });
+    </script>
+</body>
+</html>
